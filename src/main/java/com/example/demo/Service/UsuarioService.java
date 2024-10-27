@@ -1,5 +1,6 @@
 package com.example.demo.Service;
 
+import com.example.demo.Entity.Usuario;
 import com.example.demo.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,20 +14,20 @@ public class UsuarioService {
     @Autowired
     public UsuarioRepository repository;
 
-    public List<UsuarioService> findAll(){
+    public List<Usuario> findAll(){
         return repository.findAll();
     }
 
-    public UsuarioService saveUsuario(UsuarioService usuarioService){
-        return repository.save(usuarioService);
+    public Usuario saveUsuario(Usuario usuario){
+        return repository.save(usuario);
     }
 
-    public Optional<UsuarioService> findById(long ID){
+    public Optional<Usuario> findById(long ID){
         return repository.findById(ID);
     }
 
-    public Optional<UsuarioService> deleteById(long ID){
-        Optional<UsuarioService> usuario = repository.findById(ID);
+    public Optional<Usuario> deleteById(long ID){
+        Optional<Usuario> usuario = repository.findById(ID);
 
         if(usuario.isPresent()){
             repository.deleteById(ID);
@@ -35,15 +36,15 @@ public class UsuarioService {
         return usuario;
     }
 
-    public Optional<UsuarioService> atualizarUsuario(Long id, UsuarioService usuarioServiceNovo){
+    public Optional<Usuario> atualizarUsuario(Long id, Usuario usuarioNovo){
 
-        Optional<UsuarioService> byId = repository.findById(id);
+        Optional<Usuario> byId = repository.findById(id);
 
         if(byId.isEmpty()){
             return byId;
         }
 
-        return Optional.of(repository.save(usuarioServiceNovo));
+        return Optional.of(repository.save(usuarioNovo));
     }
 
 }

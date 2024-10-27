@@ -1,27 +1,45 @@
 package com.example.demo.Entity;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.List;
 
 
-public class Usuario {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@Entity(name = "usuario")
+public class Usuario implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 234565432L;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id_usuario;
 
     private String nome;
+
     private String email;
-    private String telefone;
+
+    private String phone;
+
     private String cpf;
 
-    public Long getId() {
-        return id;
+    @OneToMany(mappedBy = "usuario")
+    @JsonIgnore
+    private List<Reserva> reservas;
+
+    public Usuario(Long id_usuario, String nome, String email, String phone, String cpf) {
+        this.id_usuario = id_usuario;
+        this.nome = nome;
+        this.email = email;
+        this.phone = phone;
+        this.cpf = cpf;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public Usuario() {
     }
+
 
     public String getNome() {
         return nome;
@@ -39,12 +57,12 @@ public class Usuario {
         this.email = email;
     }
 
-    public String getTelefone() {
-        return telefone;
+    public String getPhone() {
+        return phone;
     }
 
-    public void setTelefone(String telefone) {
-        this.telefone = telefone;
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public String getCpf() {
@@ -53,5 +71,21 @@ public class Usuario {
 
     public void setCpf(String cpf) {
         this.cpf = cpf;
+    }
+
+    public void setId_usuario(Long id_usuario) {
+        this.id_usuario = id_usuario;
+    }
+
+    public Long getId_usuario() {
+        return id_usuario;
+    }
+
+    public List<Reserva> getReservas() {
+        return reservas;
+    }
+
+    public void setReservas(List<Reserva> reservas) {
+        this.reservas = reservas;
     }
 }

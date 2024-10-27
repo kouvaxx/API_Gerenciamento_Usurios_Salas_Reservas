@@ -1,59 +1,105 @@
 package com.example.demo.Controller;
 
+import com.example.demo.DTOs.ReservaDTO;
 import com.example.demo.Entity.Reserva;
 import com.example.demo.Service.ReservaService;
 import jakarta.persistence.Id;
+import jakarta.validation.Valid;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @RestController
 @RequestMapping("reservas")
 public class ReservaController {
 
-@Autowired
-private ReservaService reservaService;
+    @Autowired
+    private ReservaService reservaService;
 
-@PostMapping
-    public ResponseEntity<Reserva> criarReserva(@RequestBody Reserva reserva) {
-    Reserva novaReserva = reserva.Service.criarReserva(reserva);
-    return ResponseEntity.ok(novaReserva);
-}
+    @GetMapping
+    public ResponseEntity<List<Reserva>> findAll() {
 
-@GetMapping("/{id}")
-    public ResponseEntity<Reserva> buscarReserva(@PathVariable Integer id) {
-      Reserva reserva = reservaService.buscarReservaPorId(Id);
-      return ResponseEntity.ok(reserva);
-}
+        return ResponseEntity.status(HttpStatus.OK).body(reservaService.findAll());
 
-@PutMapping("/{id}")
-    public ResponseEntity<Reserva> atualizarReserva(@PathVariable Long id, @RequestBody Reserva reserva) {
-     Reserva reservaAtualizada = reservaService.atualizarReserva(id, reserva);
-     return ResponseEntity.ok(reservaAtualizada);
-}
-    @DeleteMapping("/usuario/{usuarioId}")
-    public ResponseEntity<Reserva> deletarReserva(@PathVariable Integer usuarioId) {
-    return ResponseEntity.noContent().build();
     }
 
-@GetMapping("/usuario/{usuarioId}")
-public ResponseEntity<List<Reserva>> getReservasPorUsuario @PathVariable Long usuarioId) {
-        List<Reserva> reservas = reservaService.listarReservasPorUsuario(usuarioId);
-        return ResponseEntity.ok(reservas);
+    @PostMapping
+    public ResponseEntity<Object> createReserva(@RequestBody @Valid ReservaDTO reservaDTO) {
+        Reserva reserva = new Reserva();
+        BeanUtils.copyProperties(reservaDTO, reserva);
+        reserva.setStatus(reservaDTO.status() == 1);
+
+
+        Reserva retornoReserva = reservaService.createReserva(reserva, reservaDTO.sala_id(), reservaDTO.usuario_id());
+        if (retornoReserva == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Voce descumpriu alguma regra da reserva!");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(retornoReserva);
     }
 
-    @GetMapping("/usuario/{usuarioId}")
-    public ResponseEntity<List<Reserva>> getReservasPorUsuarioId(@PathVariable Long usuarioId) {
-    return ResponseEntity.ok(reservas);
+    @GetMapping("{id}")
+    public ResponseEntity<Object> findById(@PathVariable Long id) {
+        Optional<Reserva> byId = reservaService.findById(id);
+
+        if (byId.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Sala não encontrado");
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(byId);
     }
 
-@GetMapping("/sala/{salaId}")
-    public ResponseEntity<List<Reserva>> getReservasPorSala(@PathVariable Long salaId) {
-    return ResponseEntity.ok(reservas);
-}
+    @DeleteMapping("{id}")
+    public ResponseEntity<Object> delete(@PathVariable Long id) {
+        Optional<Reserva> byId = reservaService.deleteById(id);
+        if (byId.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Sala não encontrado");
+        }
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(byId);
+    }
+
+    @PutMapping("{id}")
+    public ResponseEntity<Object> update(@PathVariable Long id, @RequestBody @Valid ReservaDTO reservaDTO) {
+        Reserva reserva = new Reserva();
+        BeanUtils.copyProperties(reservaDTO, reserva);
+        reserva.setStatus(reservaDTO.status() == 1);
+        reserva.setId_reserva(id);
+
+       Reserva reserva1 = reservaService.atualizarReserva(reserva, reservaDTO.sala_id(), reservaDTO.usuario_id());
+
+        if (reserva1 == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Voce descumpriu alguma regra de atualizar reserva!");
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(reserva1);
+    }
+    @GetMapping("/{userId}/usuario")
+    private ResponseEntity<Object> usuarioReservas(@PathVariable Long userId){
+
+        List<Reserva> reservasUsuario = reservaService.usuarioReservas(userId);
+
+        if(reservasUsuario.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario não possui reservas");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(reservasUsuario);
+    }
+
+    @GetMapping("/{salaId}/salas")
+    private ResponseEntity<Object> salaReservas(@PathVariable Long salaId){
+
+        List<Reserva> reservasSala = reservaService.salaReservas(salaId);
+
+        if(reservasSala.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario não possui reservas");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(reservasSala);
+    }
 
 }
 
